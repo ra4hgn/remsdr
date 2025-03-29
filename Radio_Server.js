@@ -420,7 +420,7 @@ function ServersReceived(socket) {
         }
         Users.lastTX_Audio = T;
         clientTX.send(data, 9005); //Array of 256 bytes via UDP
-        CPU.ToggleOscil();
+        // CPU.ToggleOscil();
     });
     socket.on("CallTX", (data, callback) => { //Data to client High Rate
         data = JSON.parse(data);
@@ -451,10 +451,8 @@ function ServersReceived(socket) {
     socket.on("ToOmnirig", (data) => {
         Omnirig.ToOmnirig(data);
     });
-    socket.on("SetGPIOs", (data) => {
-        CPU.SetGPIOs(data);
-    });
-}
+
+
 //USERS CONNECTED
 const Users = {
     list: [],
