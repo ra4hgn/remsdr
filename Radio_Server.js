@@ -176,7 +176,8 @@ function ServersReceived(socket) {
         var AccesKeyF = "";
         try {
             AccesKeyF = fs.readFileSync('/remsdr/AccessKey.txt', 'utf8');
-        } catch (e) {}
+        } catch (e) {
+        }
         AccesKeyF = AccesKeyF.trim();
         if (arg.ToLaunch === "RX") {
             if (arg.RXidx >= 0 && arg.AccessKey === AccesKeyF) { //Force Pilot Prioritary
@@ -242,31 +243,31 @@ function ServersReceived(socket) {
                 SDRtx: SDRtx
             });
         }
-		if (arg.ToLaunch == "No") {
+        if (arg.ToLaunch == "No") {
             //Create new user
-                Users.list.push({
-                    pseudo: arg.pseudo,
-                    RXpilot: false,
-                    TXpilot: false,
-                    AccessKey: arg.AccessKey,
-                    AccessOK: false,
-                    lastM: Date.now(),
-                    Tconnect: Date.now()
-                });
-                //Test if RX Pilot possible
-                var k = Users.list.length - 1;
-                if (AccesKeyF == arg.AccessKey) { //Accès RX et TX prioritaire
-                    Users.list[k].AccessOK = true;
-                }
-                var NoPilot = true;
-                
+            Users.list.push({
+                pseudo: arg.pseudo,
+                RXpilot: false,
+                TXpilot: false,
+                AccessKey: arg.AccessKey,
+                AccessOK: false,
+                lastM: Date.now(),
+                Tconnect: Date.now()
+            });
+            //Test if RX Pilot possible
+            var k = Users.list.length - 1;
+            if (AccesKeyF == arg.AccessKey) { //Accès RX et TX prioritaire
+                Users.list[k].AccessOK = true;
+            }
+            var NoPilot = true;
+
             var response = JSON.stringify({
                 idx: k,
                 RXpilot: Users.list[k].RXpilot,
                 TXpilot: Users.list[k].TXpilot,
                 AccessOk: Users.list[k].AccessOK,
                 SDRrx: SDRrx,
-                SDRtx: SDRtx,         
+                SDRtx: SDRtx,
                 CPUshort: CPUshort,
                 GpredictOnOff: GpredictOnOff,
                 OmnirigOnOff: OmnirigOnOff
@@ -352,19 +353,21 @@ function ServersReceived(socket) {
         }
         RX = data.RX;
         if (RX_Old.Fsdr != RX.Fsdr) { //To avoid a click every second. Each time the frequency is refreshed
-            RXclientRpc.methodCall('set_Fsdr', [RX.Fsdr], function () {});
+            RXclientRpc.methodCall('set_Fsdr', [RX.Fsdr], function () {
+            });
             RX_Old.Fsdr = RX.Fsdr;
         }
         if (RX_Old.Ffine != RX.Ffine) {
             var FreqFine = (Rx.invSpectra) ? -RX.Ffine : RX.Ffine; // Case of spectra inverted
-            RXclientRpc.methodCall('set_Ffine', [FreqFine], function () {})
+            RXclientRpc.methodCall('set_Ffine', [FreqFine], function () {
+            })
             RX_Old.Ffine != RX.Ffine;
         }
         var FRX_Gpredict = Gpredict.RX(Math.floor(Rx.Fcentral + RX.Ffine)); //Value F audio if necessary for Gpredict. Retur Doppler corrected
         Omnirig.RX(Math.floor(Rx.Fcentral + RX.Ffine)); //Value F audio RX
         callback(JSON.stringify({
-                FRX_Gpredict: FRX_Gpredict
-            }));
+            FRX_Gpredict: FRX_Gpredict
+        }));
     });
     socket.on("PushRx", (data, callback) => { //Data from Pilot Low Rate
         data = JSON.parse(data);
@@ -374,48 +377,61 @@ function ServersReceived(socket) {
         }
         Rx = data.Rx;
         var decim_LP = BWmaxF / Rx.idxBW;
-        RXclientRpc.methodCall('set_decim_LP', [decim_LP], function () {});
+        RXclientRpc.methodCall('set_decim_LP', [decim_LP], function () {
+        });
         var M = (Rx.invSpectra) ? 1 - Rx.IdxModul : Rx.IdxModul; //LSB or USB inverted or not
         if (Rx.IdxModul == 5 || Rx.IdxModul == 6) {
             M = Rx.IdxModul - 5; //CW-LSB and CW-USB
             M = (Rx.invSpectra) ? 6 - Rx.IdxModul : M; //inversion CW-LSB and CW-USB
         }
-        RXclientRpc.methodCall('set_Modulation', [M], function () {})
-        RXclientRpc.methodCall('set_Squelch', [Rx.Squelch], function () {})
-        RXclientRpc.methodCall('set_G1', [Rx.G1], function () {})
-        RXclientRpc.methodCall('set_G2', [Rx.G2], function () {})
-        RXclientRpc.methodCall('set_G3', [Rx.G3], function () {})
+        RXclientRpc.methodCall('set_Modulation', [M], function () {
+        })
+        RXclientRpc.methodCall('set_Squelch', [Rx.Squelch], function () {
+        })
+        RXclientRpc.methodCall('set_G1', [Rx.G1], function () {
+        })
+        RXclientRpc.methodCall('set_G2', [Rx.G2], function () {
+        })
+        RXclientRpc.methodCall('set_G3', [Rx.G3], function () {
+        })
         callback(JSON.stringify());
     });
     socket.on("PushTX", (data, callback) => { //Data from Pilot High Rate
         data = JSON.parse(data);
         TX = data.TX;
         Users.lastTX_M = Date.now();
-		
-        if (TX_Old.Fsdr != TX.Fsdr || TX_Old.LNUC != TX.LNUC  || TX_Old.G1 != TX.G1 || TX_Old.G2 != TX.G2 || TX_Old.CTCSS != TX.CTCSS)  { //To avoid a click every second. Each time the frequency is refreshed
-            TXclientRpc.methodCall('set_Fsdr', [TX.Fsdr], function () {});
-            TXclientRpc.methodCall('set_LNUC', [TX.LNUC], function () {});
+
+        if (TX_Old.Fsdr != TX.Fsdr || TX_Old.LNUC != TX.LNUC || TX_Old.G1 != TX.G1 || TX_Old.G2 != TX.G2 || TX_Old.CTCSS != TX.CTCSS) { //To avoid a click every second. Each time the frequency is refreshed
+            TXclientRpc.methodCall('set_Fsdr', [TX.Fsdr], function () {
+            });
+            TXclientRpc.methodCall('set_LNUC', [TX.LNUC], function () {
+            });
             if (Users.lastTX_Audio + 100 > Users.lastTX_M) { // TX On we set normal gains
-                TXclientRpc.methodCall('set_G1', [TX.G1], function () {});
-                TXclientRpc.methodCall('set_G2', [TX.G2], function () {});
-            } 
-			
+                TXclientRpc.methodCall('set_G1', [TX.G1], function () {
+                });
+                TXclientRpc.methodCall('set_G2', [TX.G2], function () {
+                });
+            }
+
             if (SDRtx == "SA818")
-                TXclientRpc.methodCall('set_CTCSS', [TX.CTCSS], function () {});
-			
+                TXclientRpc.methodCall('set_CTCSS', [TX.CTCSS], function () {
+                });
+
             TX_Old = TX;
         }
         var FTX_Gpredict = Gpredict.TX(Math.floor(TX.Freq)); //Value F audio if necessary for Gpredict. Retur Doppler corrected
 
         callback(JSON.stringify({
-                FTX_Gpredict: FTX_Gpredict
-            }));
+            FTX_Gpredict: FTX_Gpredict
+        }));
     });
     socket.on("AudioTX_Bytes", (data) => {
         var T = Date.now();
         if (Users.lastTX_Audio < T - 100) { //TX just switch on,we set normal gains
-            TXclientRpc.methodCall('set_G1', [TX.G1], function () {});
-            TXclientRpc.methodCall('set_G2', [TX.G2], function () {});
+            TXclientRpc.methodCall('set_G1', [TX.G1], function () {
+            });
+            TXclientRpc.methodCall('set_G2', [TX.G2], function () {
+            });
             Users.TX_On = true;
         }
         Users.lastTX_Audio = T;
@@ -432,7 +448,8 @@ function ServersReceived(socket) {
     });
     //RX Configuration
     socket.on("writeConfRX", (data, callback) => {
-        fs.writeFile('/remsdr/data/ConfRX.txt', data, function (err) {});
+        fs.writeFile('/remsdr/data/ConfRX.txt', data, function (err) {
+        });
     });
     socket.on("readConfRX", (callback) => {
         fs.readFile('/remsdr/data/ConfRX.txt', function (err, data) {
@@ -441,7 +458,8 @@ function ServersReceived(socket) {
     });
     //TX Configuration
     socket.on("writeConfTX", (data, callback) => {
-        fs.writeFile('/remsdr/data/ConfTX.txt', data, function (err) {});
+        fs.writeFile('/remsdr/data/ConfTX.txt', data, function (err) {
+        });
     });
     socket.on("readConfTX", (callback) => {
         fs.readFile('/remsdr/data/ConfTX.txt', function (err, data) {
@@ -451,7 +469,7 @@ function ServersReceived(socket) {
     socket.on("ToOmnirig", (data) => {
         Omnirig.ToOmnirig(data);
     });
-
+}
 
 //USERS CONNECTED
 const Users = {
